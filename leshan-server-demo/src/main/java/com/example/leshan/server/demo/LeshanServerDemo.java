@@ -1,8 +1,15 @@
 package com.example.leshan.server.demo;
 
+import java.io.File;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.security.cert.Certificate;
 import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.example.leshan.server.demo.ServerOptions.ServerOptionsBuilder;
 
@@ -17,6 +24,7 @@ import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.slf4j.Logger;
@@ -73,13 +81,35 @@ public class LeshanServerDemo {
     }
 
     // Abort if all RPK config is not complete
-    // TODO
+    boolean rpkConfig = false;
+    if (!cl.hasOption("pubk")) {
+      if (!cl.hasOption("prik")) {
+        System.err.println("pubk, prik should be used together to connect using RPK");
+      } else {
+        rpkConfig = true;
+      }
+    }
 
     // Abort if all X509 config is not complete
-    // TODO
+    boolean x509Config = false;
+    if (cl.hasOption("cert")) {
+      if (!cl.hasOption("prik")) {
+        System.err.println("cert, prik should be used together to connect using X509");
+        formatter.printHelp(USAGE, options);
+        return;
+      } else {
+        x509Config = true;
+      }
+    }
 
     // Abort if prik is used without complete RPK or X509 config
-    // TODO
+    if (cl.hasOption("prik")) {
+      if (!rpkConfig && !x509Config) {
+        System.err.println("print should be used with cert for X509 config OR pubk for RPK config");
+        formatter.printHelp(USAGE, options);
+        return ;
+      }
+    }
 
     // get local address
     String localPortOption = cl.getOptionValue("lp");
@@ -110,23 +140,67 @@ public class LeshanServerDemo {
     serverOptionsBuilder.webPortIs(webPort);
 
     // Get models folder
-    // TODO
+    serverOptionsBuilder.modelsFolderPathIs(cl.getOptionValue("m"));
 
     // get the Redis hostname:port
-    // TODO
+    serverOptionsBuilder.redisUrlIs(cl.getOptionValue("r"));
 
     // get RPK info
-    // TODO notimpl
+    PublicKey publicKey = null;
+    PrivateKey privateKey = null;
+    if (rpkConfig) {
+      try {
+        serverOptionsBuilder.privateKeyIs(SecurityUtil.privateKey.readFromFile(cl.getOptionValue("prik")));
+        serverOptionsBuilder.publicKeyIs(SecurityUtil.publicKey.readFromFile(cl.getOptionValue("pubk")));
+      } catch (Exception e) {
+        System.err.println("Unable to load RPK files : " + e.getMessage());
+        e.printStackTrace();
+        formatter.printHelp(USAGE, options);
+        return ;
+      }
+    }
+
 
     // get X509 info
-    // TODO not impl
+    X509Certificate certificate = null;
+    if (cl.hasOption("cert")) {
+      try {
+        serverOptionsBuilder.privateKeyIs(SecurityUtil.privateKey.readFromFile(cl.getOptionValue("prik")));
+        serverOptionsBuilder.publicKeyIs(SecurityUtil.publicKey.readFromFile(cl.getOptionValue("cert")));
+      } catch (Exception e) {
+        System.err.println("Unable to load X509 files : " + e.getMessage());
+        e.printStackTrace();
+        formatter.printHelp(USAGE, options);
+        return ;
+      }
+    }
+
 
     // get X509 info
-    /// TODO not impl
+    List<Certificate> trustStore = null;
+    if (cl.hasOption("truststore") {
+      trustStore = new ArrayList<>();
+      File input = new File(cl.getOptionValue("truststore"));
+
+      // check input exists
+      File[] files;
+      if (!input.exists()) {
+        files = input.listFiles();
+      } else {
+        files = new File[] { input };
+      }
+      for (File file : files) {
+        try {
+          trustStore.add(SecurityUtil.certificate.readFromFile(file.getAbsolutePath()));
+        } catch (Exception e) {
+          LOG.warn("Unable to load X509 files {}:{}", file.getAbsolutePath(), e.getMessage());
+        }
+      }
+    }
 
     // Get keystore parameters
     serverOptionsBuilder.keyStorePathIs(cl.getOptionValue("ks"));
-    serverOptionsBuilder.keyStoreTypeIs(cl.getOptionValue("kst", KeyStore.getDefaultType());
+    serverOptionsBuilder.keyStoreTypeIs(cl.getOptionValue("kst", KeyStore.getDefaultType()));
     serverOptionsBuilder.keyStorePassIs(cl.getOptionValue("ksp"));
     serverOptionsBuilder.keyStoreAliasIs(cl.getOptionValue("ksa"));
     serverOptionsBuilder.keyStoreAliasPassIs(cl.getOptionValue("ksap"));
@@ -134,8 +208,11 @@ public class LeshanServerDemo {
     // Get mDNS publish switch
     serverOptionsBuilder.publishDNSSdServicesIs(cl.hasOption("mdns"));
 
+    serverOptionsBuilder.supportDeprecatedCiphersIs(cl.hasOption("oc"));
+
+
     try {
-      createAndStartServer(serverOptionsBuilder.build());
+      LeshanServerController.createWith(serverOptionsBuilder.build()).start();
     } catch (BindException e) {
       System.err
           .println(String.format("Web port %s is already used, you colud change it using 'webport' option", webPort));
@@ -227,34 +304,4 @@ public class LeshanServerDemo {
     return options;
   }
 
-  private static void createAndStartServer(ServerOptions serverOptions) throws Exception {
-    // Prepare LWM2M server
-    LeshanServerBuilder builder = new LeshanServerBuilder();
-    builder.setEncoder(new DefaultLwM2mNodeEncoder());
-    LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
-    builder.setDecoder(decoder);
-
-    // Create and start LWM2M server
-    LeshanServer lwServer = builder.build();
-
-    // Now prepare Jetty
-    InetSocketAddress jettyAddr;
-    if (serverOptions.getWebAddress() == null) {
-      jettyAddr = new InetSocketAddress(serverOptions.getWebPort());
-    } else {
-      jettyAddr = new InetSocketAddress(serverOptions.getWebAddress(), serverOptions.getWebPort());
-    }
-    Server server = new Server(jettyAddr);
-    WebAppContext root = new WebAppContext();
-    root.setContextPath("/");
-    root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
-    root.setParentLoaderPriority(true);
-    server.setHandler(root);
-
-    // Start Jetty & Leshan
-    lwServer.start();
-    server.start();
-    LOG.info("Web Server started at {}.", server.getURI());
-
-  }
 }

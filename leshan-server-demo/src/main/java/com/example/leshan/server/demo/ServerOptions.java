@@ -160,6 +160,8 @@ public class ServerOptions {
     }
 
     public ServerOptionsBuilder publicKeyIs(PublicKey publicKey) {
+      // TODO 呼び出す側が↓みたいな感じなので、少し改良が必要
+      // serverOptionsBuilder.publicKeyIs(SecurityUtil.publicKey.readFromFile(cl.getOptionValue("cert")));
       serverOptions.publicKey = publicKey;
       return this;
     }
