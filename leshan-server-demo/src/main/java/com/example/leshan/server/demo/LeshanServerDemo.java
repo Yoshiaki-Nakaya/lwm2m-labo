@@ -178,7 +178,7 @@ public class LeshanServerDemo {
 
     // get X509 info
     List<Certificate> trustStore = null;
-    if (cl.hasOption("truststore") {
+    if (cl.hasOption("truststore")) {
       trustStore = new ArrayList<>();
       File input = new File(cl.getOptionValue("truststore"));
 
