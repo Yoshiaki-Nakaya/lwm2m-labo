@@ -29,6 +29,10 @@ public class ServerOptions {
   private Boolean publishDNSSdServices;
   private boolean supportDeprecatedCiphers;
 
+  private ServerOptions() {
+
+  }
+
   public String getWebAddress() {
     return webAddress;
   }

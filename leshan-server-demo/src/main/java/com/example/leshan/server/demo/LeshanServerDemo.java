@@ -34,7 +34,7 @@ public class LeshanServerDemo {
 
   static {
     // Define a default logback.configurationFile
-    String property = System.getProperty("logback.configurationFile");
+    final String property = System.getProperty("logback.configurationFile");
     if (property == null) {
       System.setProperty("logback.configurationFile", "logback-config.xml");
     }
@@ -48,20 +48,20 @@ public class LeshanServerDemo {
 
   private static final String DEFAULT_KEYSTORE_ALIAS = "leshan";
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     // Define options for command line tools
-    Options options = defineOptions();
+    final Options options = defineOptions();
 
-    HelpFormatter formatter = new HelpFormatter();
+    final HelpFormatter formatter = new HelpFormatter();
     formatter.setWidth(120);
     formatter.setOptionComparator(null);
 
     // Parse argument
-    ServerOptionsBuilder serverOptionsBuilder = ServerOptionsBuilder.builder();
+    final ServerOptionsBuilder serverOptionsBuilder = ServerOptionsBuilder.builder();
     CommandLine cl;
     try {
       cl = new DefaultParser().parse(options, args);
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       System.err.println("Parsing failed. Reason: " + e.getMessage());
       formatter.printHelp(USAGE, options);
       return;
@@ -107,32 +107,31 @@ public class LeshanServerDemo {
       if (!rpkConfig && !x509Config) {
         System.err.println("print should be used with cert for X509 config OR pubk for RPK config");
         formatter.printHelp(USAGE, options);
-        return ;
+        return;
       }
     }
 
     // get local address
-    String localPortOption = cl.getOptionValue("lp");
+    final String localPortOption = cl.getOptionValue("lp");
     Integer localPort = null;
     if (localPortOption != null) {
-        localPort = Integer.parseInt(localPortOption);
+      localPort = Integer.parseInt(localPortOption);
     }
     serverOptionsBuilder.localPortIs(localPort);
     serverOptionsBuilder.localAddressIs(cl.getOptionValue("lh"));
 
     // get secure local address
-    String secureLocalPortOption = cl.getOptionValue("slp");
+    final String secureLocalPortOption = cl.getOptionValue("slp");
     Integer secureLocalPort = null;
     if (secureLocalPortOption != null) {
-        secureLocalPort = Integer.parseInt(secureLocalPortOption);
+      secureLocalPort = Integer.parseInt(secureLocalPortOption);
     }
     serverOptionsBuilder.secureLocalPortIs(secureLocalPort);
     serverOptionsBuilder.secureLocalAddressIs(cl.getOptionValue("slh"));
 
-
     // get http address
     serverOptionsBuilder.webAddressIs(cl.getOptionValue("wh"));
-    String webPortOption = cl.getOptionValue("wp");
+    final String webPortOption = cl.getOptionValue("wp");
     int webPort = 8080;
     if (webPortOption != null) {
       webPort = Integer.parseInt(webPortOption);
@@ -146,41 +145,39 @@ public class LeshanServerDemo {
     serverOptionsBuilder.redisUrlIs(cl.getOptionValue("r"));
 
     // get RPK info
-    PublicKey publicKey = null;
-    PrivateKey privateKey = null;
+    final PublicKey publicKey = null;
+    final PrivateKey privateKey = null;
     if (rpkConfig) {
       try {
         serverOptionsBuilder.privateKeyIs(SecurityUtil.privateKey.readFromFile(cl.getOptionValue("prik")));
         serverOptionsBuilder.publicKeyIs(SecurityUtil.publicKey.readFromFile(cl.getOptionValue("pubk")));
-      } catch (Exception e) {
+      } catch (final Exception e) {
         System.err.println("Unable to load RPK files : " + e.getMessage());
         e.printStackTrace();
         formatter.printHelp(USAGE, options);
-        return ;
+        return;
       }
     }
 
-
     // get X509 info
-    X509Certificate certificate = null;
+    final X509Certificate certificate = null;
     if (cl.hasOption("cert")) {
       try {
         serverOptionsBuilder.privateKeyIs(SecurityUtil.privateKey.readFromFile(cl.getOptionValue("prik")));
         serverOptionsBuilder.publicKeyIs(SecurityUtil.publicKey.readFromFile(cl.getOptionValue("cert")));
-      } catch (Exception e) {
+      } catch (final Exception e) {
         System.err.println("Unable to load X509 files : " + e.getMessage());
         e.printStackTrace();
         formatter.printHelp(USAGE, options);
-        return ;
+        return;
       }
     }
-
 
     // get X509 info
     List<Certificate> trustStore = null;
     if (cl.hasOption("truststore")) {
       trustStore = new ArrayList<>();
-      File input = new File(cl.getOptionValue("truststore"));
+      final File input = new File(cl.getOptionValue("truststore"));
 
       // check input exists
       File[] files;
@@ -189,10 +186,10 @@ public class LeshanServerDemo {
       } else {
         files = new File[] { input };
       }
-      for (File file : files) {
+      for (final File file : files) {
         try {
           trustStore.add(SecurityUtil.certificate.readFromFile(file.getAbsolutePath()));
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOG.warn("Unable to load X509 files {}:{}", file.getAbsolutePath(), e.getMessage());
         }
       }
@@ -210,19 +207,18 @@ public class LeshanServerDemo {
 
     serverOptionsBuilder.supportDeprecatedCiphersIs(cl.hasOption("oc"));
 
-
     try {
       LeshanServerController.createWith(serverOptionsBuilder.build()).start();
-    } catch (BindException e) {
+    } catch (final BindException e) {
       System.err
           .println(String.format("Web port %s is already used, you colud change it using 'webport' option", webPort));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOG.error("Jetty stopped with unexpected error ...", e);
     }
   }
 
   private static final Options defineOptions() {
-    Options options = new Options();
+    final Options options = new Options();
 
     final StringBuilder RPKChapter = new StringBuilder();
     RPKChapter.append("\n .");
