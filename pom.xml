@@ -70,5 +70,6 @@
     <module>leshan-client-demo</module>
     <module>leshan-server-demo</module>
     <module>leshan-boot-strap-server-demo</module>
+    <module>leshan-integration-tests</module>
   </modules>
 </project>
