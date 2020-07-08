@@ -30,13 +30,6 @@ public class LeshanClientDemo {
 
   private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
 
-  // /!\ This field is a COPY of
-  // org.eclipse.leshan.server.demo.LeshanServerDemo.modelPaths /!\
-  // TODO create a leshan-demo project ?
-  public static final String[] modelPaths = new String[] {
-      // TODO include file list
-  };
-
   private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
   private static final String DEFAULT_ENDPOINT = "LeshanCLientDemo";
   private static final long DEFAULT_LIFETIME = TimeUnit.MINUTES.toSeconds(5);
@@ -268,7 +261,7 @@ public class LeshanClientDemo {
     String modelsFolderPath = cl.getOptionValue("m");
 
     try {
-      new LeshanClientController().createAndStartClient(optionsBuilder.build());
+      new LeshanClientController(optionsBuilder.build()).start();
     } catch (Exception e) {
       System.err.println("Unable to create and start client...");
       e.printStackTrace();

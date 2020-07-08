@@ -9,9 +9,20 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.jmdns</groupId>
+      <artifactId>jmdns</artifactId>
+      <version>3.5.5</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.eclipse.leshan</groupId>
       <artifactId>leshan-server-cf</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-server-redis</artifactId>
+    </dependency>
+
 
     <dependency>
       <groupId>commons-cli</groupId>
@@ -21,6 +32,10 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlets</artifactId>
     </dependency>
 
     <dependency>
