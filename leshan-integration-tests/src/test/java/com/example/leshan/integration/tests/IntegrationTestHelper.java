@@ -1,18 +1,20 @@
 package com.example.leshan.integration.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
-import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
@@ -28,7 +30,6 @@ import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -160,7 +161,6 @@ public class IntegrationTestHelper {
     builder.setObjectModelProvider(new StaticModelProvider(createObjectModels()));
     builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
     builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-    ;
     builder.setSecurityStore(new InMemorySecurityStore());
 
     return builder;
@@ -194,7 +194,11 @@ public class IntegrationTestHelper {
   }
 
   public void waitForUpdateAtClientSide(long timeInSeconds) {
-    throw new UnsupportedOperationException("Not Impl yet.");
+    try {
+      assertThat(clientObserver.waitForUpdate(timeInSeconds, TimeUnit.SECONDS)).isTrue();
+    } catch (InterruptedException | TimeoutException e) {
+      throw new RuntimeException(e);
+    }
 
   }
 
@@ -209,8 +213,11 @@ public class IntegrationTestHelper {
   }
 
   public void waitForDeregistrationAtServerSide(long timeInSeconds) {
-    throw new UnsupportedOperationException("Not Impl yet.");
-
+    try {
+      registrationListener.waitForDeregister(timeInSeconds, TimeUnit.SECONDS);
+    } catch (InterruptedException | TimeoutException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void waitForDeregistrationAtClientSide(long timeInSeconds) {
@@ -243,11 +250,11 @@ public class IntegrationTestHelper {
   }
 
   public void assertClientRegisterered() {
-    throw new UnsupportedOperationException("Not Impl yet.");
+    assertThat(getCurrentRegistration()).isNotNull();
   }
 
   public void assertClientNotRegisterered() {
-    throw new UnsupportedOperationException("Not Impl yet.");
+    assertThat(getCurrentRegistration()).isNull();
   }
 
   public Registration getLastRegistration() {
