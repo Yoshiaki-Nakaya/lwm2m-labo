@@ -1,4 +1,4 @@
-package com.example.leshan.integration.tests;
+package com.example.leshan.integration.tests.helper;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;

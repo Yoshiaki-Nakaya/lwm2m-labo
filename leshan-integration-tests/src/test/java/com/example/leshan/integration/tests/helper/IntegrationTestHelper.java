@@ -1,4 +1,4 @@
-package com.example.leshan.integration.tests;
+package com.example.leshan.integration.tests.helper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
-import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -30,13 +29,16 @@ import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.model.StaticModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
+
+import com.example.leshan.integration.tests.parts.SynchronousClientObserver;
+import com.example.leshan.integration.tests.parts.SynchronousRegistrationListener;
+import com.example.leshan.integration.tests.parts.TestDevice;
 
 public class IntegrationTestHelper {
   public static final Random r = new Random();
@@ -56,8 +58,8 @@ public class IntegrationTestHelper {
   public static final int INTEGER_MANDATORY_RESOURCE_ID = 8;
   public static final int STRING_MANDATORY_RESOURCE_ID = 9;
 
-  LeshanServer server;
-  LeshanClient client;
+  public LeshanServer server;
+  public LeshanClient client;
   AtomicReference<String> currentEndpointIdentifier = new AtomicReference<String>();
 
   private SynchronousClientObserver clientObserver = new SynchronousClientObserver();
@@ -102,26 +104,6 @@ public class IntegrationTestHelper {
 
   public void createClient() {
     createClient(null);
-  }
-
-  public static class TestDevice extends Device {
-
-    public TestDevice() {
-      super();
-    }
-
-    public TestDevice(String manufacturer, String modelNumber, String serialNumber, String supportedBinding) {
-      super(manufacturer, modelNumber, serialNumber, supportedBinding);
-    }
-
-    @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
-      if (resourceid == 4) {
-        return ExecuteResponse.success();
-      } else {
-        return super.execute(identity, resourceid, params);
-      }
-    }
   }
 
   public void createClient(Map<String, String> additionalAttributes) {

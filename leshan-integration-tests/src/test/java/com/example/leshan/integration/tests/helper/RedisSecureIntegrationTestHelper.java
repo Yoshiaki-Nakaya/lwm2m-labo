@@ -1,4 +1,4 @@
-package com.example.leshan.integration.tests;
+package com.example.leshan.integration.tests.helper;
 
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 

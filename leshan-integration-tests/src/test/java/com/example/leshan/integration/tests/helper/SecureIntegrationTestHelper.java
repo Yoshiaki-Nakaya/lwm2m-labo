@@ -1,4 +1,4 @@
-package com.example.leshan.integration.tests;
+package com.example.leshan.integration.tests.helper;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,6 +23,8 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityStore;
+
+import com.example.leshan.integration.tests.parts.SinglePSKStore;
 
 public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 

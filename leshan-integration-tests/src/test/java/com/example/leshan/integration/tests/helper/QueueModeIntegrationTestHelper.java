@@ -1,7 +1,10 @@
-package com.example.leshan.integration.tests;
+package com.example.leshan.integration.tests.helper;
 
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+
+import com.example.leshan.integration.tests.parts.PresenceCounter;
+import com.example.leshan.integration.tests.parts.SynchronousPresenceListener;
 
 public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
 

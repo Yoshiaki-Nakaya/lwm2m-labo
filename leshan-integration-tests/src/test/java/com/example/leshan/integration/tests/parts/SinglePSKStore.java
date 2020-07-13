@@ -1,4 +1,4 @@
-package com.example.leshan.integration.tests;
+package com.example.leshan.integration.tests.parts;
 
 import java.net.InetSocketAddress;
 
